@@ -293,7 +293,7 @@ void GSdxApp::Init()
 
 	m_gs_acc_date_level.push_back(GSSetting(0, "Off", ""));
 	m_gs_acc_date_level.push_back(GSSetting(1, "Fast", "Default"));
-	m_gs_acc_date_level.push_back(GSSetting(2, "Full", "Slow"));
+	m_gs_acc_date_level.push_back(GSSetting(2, "Full", ""));
 
 	m_gs_acc_blend_level.push_back(GSSetting(0, "None", "Fastest"));
 	m_gs_acc_blend_level.push_back(GSSetting(1, "Basic", "Recommended"));
