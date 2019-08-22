@@ -267,6 +267,9 @@ void Pcsx2App::OnInitCmdLine( wxCmdLineParser& parser )
 
 	parser.AddSwitch( wxEmptyString,L"profiling",	_("update options to ease profiling (debug)") );
 
+	parser.AddOption( wxEmptyString,L"memcardpath",		_("changes the memcard path"), wxCMD_LINE_VAL_STRING );
+	parser.AddOption( wxEmptyString,L"snapshotpath",		_("changes the snapshot path"), wxCMD_LINE_VAL_STRING );
+
 	const PluginInfo* pi = tbl_PluginInfo; do {
 		parser.AddOption( wxEmptyString, pi->GetShortname().Lower(),
 			pxsFmt( _("specify the file to use as the %s plugin"), WX_STR(pi->GetShortname()) )
@@ -282,9 +285,20 @@ bool Pcsx2App::OnCmdLineError( wxCmdLineParser& parser )
 	return false;
 }
 
+wxString updateSnapshot;
+wxString updateMemcards;
 bool Pcsx2App::ParseOverrides( wxCmdLineParser& parser )
 {
 	wxString dest;
+
+	if (parser.Found( L"memcardpath", &dest ) && !dest.IsEmpty()) {
+		Console.Warning( L"Setting MemCard Path: " + dest );
+		updateMemcards = dest;
+	}
+	if (parser.Found( L"snapshotpath", &dest ) && !dest.IsEmpty()) {
+		Console.Warning( L"Setting Snapshot Path: " + dest );
+		updateSnapshot = dest;
+	}
 
 	if (parser.Found( L"cfgpath", &dest ) && !dest.IsEmpty())
 	{
@@ -495,6 +509,23 @@ bool Pcsx2App::OnInit()
 #endif
 		SysExecutorThread.Start();
 		DetectCpuAndUserMode();
+
+		// Following the DetectCpuAndUserMode() function long enough will trace it
+		// to calling AppLoadSettings, which will overwrite any settings we set in 
+		// g_Conf prior. As such, we set variables indicating we need to change
+		// the directories when we parse the command line options (I believe this
+		// happens in _parent::OnInit), and then set them here.
+		if( !updateSnapshot.IsEmpty() ) {
+			g_Conf->Folders.Set( FolderId_Snapshots, updateSnapshot, false );
+			AppApplySettings();
+			AppSaveSettings();
+		}
+		if( !updateMemcards.IsEmpty() ) {
+			g_Conf->Folders.Set( FolderId_MemoryCards, updateMemcards, false );
+			AppApplySettings();
+			AppSaveSettings();
+		}
+
 
 		//   Set Manual Exit Handling
 		// ----------------------------
