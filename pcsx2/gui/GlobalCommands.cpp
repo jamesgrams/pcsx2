@@ -878,14 +878,17 @@ void AcceleratorDictionary::Map( const KeyAcceleratorCode& _acode, const char *s
 			}
 			else {
 				KeyAcceleratorCode shifted(acode); shifted.Shift();
+				KeyAcceleratorCode controlled(acode); controlled.Cmd();
 				KeyAcceleratorCode controlledShifted(shifted); controlledShifted.Cmd();
 				operator[](acode.val32) = result;
 				operator[](shifted.val32) = result;
+				operator[](controlled.val32) = result;
 				operator[](controlledShifted.val32) = result;
 
 				if (_acode.val32 != acode.val32) { // overriding default
-					Console.WriteLn(Color_Green, L"Sys_TakeSnapshot: automatically mapping also %s and %s",
+					Console.WriteLn(Color_Green, L"Sys_TakeSnapshot: automatically mapping also %s, %s, and %s",
 						WX_STR(shifted.ToString()),
+						WX_STR(controlled.ToString()),
 						WX_STR(controlledShifted.ToString())
 						);
 				}
