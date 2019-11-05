@@ -872,26 +872,29 @@ void AcceleratorDictionary::Map( const KeyAcceleratorCode& _acode, const char *s
 			// and ctrl held together, but PCSX2 traditionally mapped f8, shift-f8 and ctrl-shift-f8
 			// to Sys_TakeSnapshot, so let's not change it - we'll keep adding only shift and
 			// ctrl-shift to the base shortcut.
-			if (acode.cmd || acode.shift) {
-				Console.Error(L"Cannot map %s to Sys_TakeSnapshot - must not include Shift or Ctrl - these modifiers will be added automatically.",
-					WX_STR(acode.ToString()));
-			}
-			else {
-				KeyAcceleratorCode shifted(acode); shifted.Shift();
-				KeyAcceleratorCode controlled(acode); controlled.Cmd();
-				KeyAcceleratorCode controlledShifted(shifted); controlledShifted.Cmd();
-				operator[](acode.val32) = result;
-				operator[](shifted.val32) = result;
-				operator[](controlled.val32) = result;
-				operator[](controlledShifted.val32) = result;
-
-				if (_acode.val32 != acode.val32) { // overriding default
-					Console.WriteLn(Color_Green, L"Sys_TakeSnapshot: automatically mapping also %s, %s, and %s",
-						WX_STR(shifted.ToString()),
-						WX_STR(controlled.ToString()),
-						WX_STR(controlledShifted.ToString())
-						);
+			// Edit: Instead, make sure shift and control are both there. This allows the non-shifted
+			// non-controlled value to not map to screenshot if the mapped key includes shift or control.
+			KeyAcceleratorCode controlled(acode); controlled.Cmd();
+			KeyAcceleratorCode shifted(acode); shifted.Shift();
+			KeyAcceleratorCode controlledShifted(shifted); controlledShifted.Cmd();
+			operator[](acode.val32) = result;
+			if( !acode.cmd ) {
+				if( !acode.shift ) {
+					operator[](shifted.val32) = result;
+					operator[](controlledShifted.val32) = result;
 				}
+				operator[](controlled.val32) = result;
+			}
+			else if( !acode.shift ) {
+				operator[](shifted.val32) = result;
+			}
+
+			if (_acode.val32 != acode.val32) { // overriding default
+				Console.WriteLn(Color_Green, L"Sys_TakeSnapshot: automatically mapping also %s, %s, and %s if not already included",
+					WX_STR(shifted.ToString()),
+					WX_STR(controlled.ToString()),
+					WX_STR(controlledShifted.ToString())
+					);
 			}
 		}
 		else {
