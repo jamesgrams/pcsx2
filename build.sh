@@ -61,7 +61,7 @@ find_freetype()
 
 set_make()
 {
-    if command -v ninja >/dev/null ; then
+    if command -v ninjam >/dev/null ; then
         flags="$flags -GNinja"
         make=ninja
     else
